@@ -38,13 +38,30 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+
+static string getExecutableDirectory(const char* executablePath) {
+
+	const char* delim = strrchr(executablePath, '/');
+	if (delim == nullptr) {
+		delim = strrchr(executablePath, '\\');
+	}
+
+	if (delim != nullptr) {
+		return string(executablePath, delim - executablePath);
+	}
+
+	return string("");
+}
+
 bool loadJNIFunctions(GetDefaultJavaVMInitArgs* getDefaultJavaVMInitArgs, CreateJavaVM* createJavaVM) {
 
+  std::string const exePath = getExecutableDirectory(getExecutablePath(""));
 #if defined(__LP64__)
-    void* handle = dlopen("jre/lib/amd64/server/libjvm.so", RTLD_LAZY);
+  std::string const libJVM =  exePath + "/jre/lib/amd64/server/libjvm.so";
 #else
-    void* handle = dlopen("jre/lib/i386/server/libjvm.so", RTLD_LAZY);
+  std::string const libJVM =  exePath + "/jre/lib/i386/server/libjvm.so";
 #endif
+    void* handle = dlopen(libJVM.c_str(), RTLD_LAZY);
     if (handle == NULL) {
         cerr << dlerror() << endl;
         return false;
@@ -72,6 +89,7 @@ const char* getExecutablePath(const char* argv0) {
 
     return buf;
 }
+
 
 bool changeWorkingDir(const char* directory) {
 	return chdir(directory) == 0;

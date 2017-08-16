@@ -28,9 +28,9 @@ using namespace std;
 
 bool verbose = false;
 
-static string workingDir;
+static string exeDir;
 static string executableName;
-static string configurationPath("config.json");
+static string configurationPath;
 
 static size_t cmdLineArgc = 0;
 static char** cmdLineArgv = nullptr;
@@ -135,7 +135,7 @@ static int loadStaticMethod(JNIEnv* env, const vector<string>& classPath, string
 
 	jclass urlClassLoaderClass = env->FindClass("java/net/URLClassLoader");
 	verify(env, urlClassLoaderClass);
-	
+
 	jmethodID urlClassLoaderCtor = env->GetMethodID(urlClassLoaderClass, "<init>", "([Ljava/net/URL;Ljava/lang/ClassLoader;)V");
 	verify(env, urlClassLoaderCtor);
 
@@ -242,7 +242,7 @@ static vector<string> extractClassPath(const sajson::value& classPath) {
 	return paths;
 }
 
-string getExecutableDirectory(const char* executablePath) {
+static string getExecutableDirectory(const char* executablePath) {
 
 	const char* delim = strrchr(executablePath, '/');
 	if (delim == nullptr) {
@@ -273,7 +273,8 @@ string getExecutableName(const char* executablePath) {
 bool setCmdLineArguments(int argc, char** argv) {
 
 	const char* executablePath = getExecutablePath(argv[0]);
-	workingDir = getExecutableDirectory(executablePath);
+	exeDir = getExecutableDirectory(executablePath);
+  configurationPath = exeDir + "/config.json";
 	executableName = getExecutableName(executablePath);
 
 	dropt_bool showHelp = 0;
@@ -332,23 +333,6 @@ bool setCmdLineArguments(int argc, char** argv) {
 
 			} else {
 
-				// evalute parameters
-
-				verbose = _verbose != 0;
-
-				if (cwd != nullptr) {
-					if (verbose) {
-						cout << "Using working directory " << cwd << " ..." << endl;
-					}
-					workingDir = string(cwd);
-				}
-
-				if (config != nullptr) {
-					if (verbose) {
-						cout << "Using configuration file " << config << " ..." << endl;
-					}
-					configurationPath = string(config);
-				}
 
 			}
 
@@ -386,7 +370,7 @@ bool setCmdLineArguments(int argc, char** argv) {
 void launchJavaVM(LaunchJavaVMCallback callback) {
 
 	// change working directory
-
+/*
 	if (!workingDir.empty()) {
 		if (verbose) {
 			cout << "Changing working directory to " << workingDir << " ..." << endl;
@@ -395,7 +379,7 @@ void launchJavaVM(LaunchJavaVMCallback callback) {
 			cerr << "Warning: failed to change working directory to " << workingDir << endl;
 		}
 	}
-
+*/
 	// read settings
 
 	sajson::document json = readConfigurationFile(configurationPath);
